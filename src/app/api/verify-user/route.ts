@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (!email) {
     return NextResponse.json({ error: "No email provided" }, { status: 400 });
   }
-
+  const db = getDb();
   try {
     const userInfo = await db
       .select()
