@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
+import Image from "next/image";
 
 const DashboardPage = () => {
   return (
@@ -45,10 +46,12 @@ const DashboardPage = () => {
         </div>
         <div className="grid grid-cols-3 grid-rows-2 gap-4 h-160">
           <div className="group relative col-span-2 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <img
+            <Image
               alt="AI Video Agent"
               className="size-full object-cover transition-transform duration-500 absolute inset-0"
               src="/images/ai-video-agent.jpeg"
+              width={1000}
+              height={1000}
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.4),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -70,10 +73,12 @@ const DashboardPage = () => {
             </div>
           </div>
           <div className="group relative col-span-1 row-span-2 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <img
+            <Image
               alt="AI Video Avatar"
               className="size-full object-cover transition-transform duration-500 absolute inset-0"
               src="/images/ai-video-avatar.jpeg"
+              width={1000}
+              height={2000}
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -92,10 +97,12 @@ const DashboardPage = () => {
             </div>
           </div>
           <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <img
+            <Image
               alt="Avatar"
               className="size-full object-cover transition-transform duration-500 absolute inset-0"
               src="/images/ai-avatar.jpeg"
+              width={1000}
+              height={1000}
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -113,10 +120,12 @@ const DashboardPage = () => {
             </div>
           </div>
           <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <img
+            <Image
               alt="AI Voice Cloning"
               className="size-full object-cover transition-transform duration-500 absolute inset-0"
               src="/images/ai-voice-cloning.jpeg"
+              width={1000}
+              height={1000}
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -141,10 +150,12 @@ const DashboardPage = () => {
           </span>
         </div>
         <div className="group relative rounded-2xl border-white/10 border-1 border-solid mt-4 h-32 overflow-hidden">
-          <img
+          <Image
             alt="My Library"
             className="size-full object-cover transition-transform duration-500 absolute inset-0"
             src="/images/library.jpeg"
+            width={2000}
+            height={1000}
           />
           <div className="bg-[linear-gradient(to_right,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.5),transparent)] absolute inset-0" />
           <div className="flex absolute inset-0 p-6 justify-between items-center">

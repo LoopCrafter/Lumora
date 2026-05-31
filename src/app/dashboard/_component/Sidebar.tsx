@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Coins,
-  Home,
-  Library,
-  Mic,
-  Plus,
-  Settings,
-  Film,
-  User,
-  Users,
-  Zap,
-} from "lucide-react";
+import { Coins, Plus, Settings, Film, PanelLeftClose } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -20,64 +9,73 @@ import {
 } from "@/src/components/ui/avatar";
 // import UserCard from "./UserCard";
 import { Button } from "@/src/components/ui/button";
+import { cn } from "@/src/lib/utils";
+import { menuItems } from "@/src/lib/constants";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Sidebar() {
-  // const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <aside className="shrink-0 h-screen fixed left-0 top-0 bg-neutral-900 border-white/10 border-t-0 border-r-1 border-b-0 border-l-0 border-solid flex p-6 flex-col justify-between w-64 z-10">
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-50 h-dvh bg-neutral-900 border-r border-white/10 flex flex-col justify-between p-4 transition-all duration-300",
+        collapsed ? "w-20" : "w-64",
+      )}
+    >
       <div className="flex flex-col gap-8">
-        <div className="flex items-center gap-2">
-          <div className="size-9 rounded-lg bg-[#1447e6] flex justify-center items-center">
-            <Film className="size-5 text-neutral-50" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="size-9 rounded-lg bg-[#1447e6] flex items-center justify-center shrink-0">
+              <Film className="size-5 text-neutral-50" />
+            </div>
+
+            {!collapsed && (
+              <span className="font-semibold text-neutral-50 text-lg whitespace-nowrap">
+                Lumora AI
+              </span>
+            )}
           </div>
-          <span className="font-semibold text-neutral-50 text-lg leading-7 tracking-tight">
-            Lumora AI
-          </span>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed((prev) => !prev)}
+            className="text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800"
+          >
+            <PanelLeftClose
+              className={cn(
+                "size-4 transition-transform",
+                collapsed && "rotate-180",
+              )}
+            />
+          </Button>
         </div>
         <nav className="flex flex-col gap-1">
-          <Button
-            className="bg-neutral-800 text-neutral-50 justify-start gap-2"
-            variant="ghost"
-          >
-            <Home className="size-4" />
-            Home
-          </Button>
-          <Button
-            className="text-[#a1a1a1] justify-start gap-2"
-            variant="ghost"
-          >
-            <Zap className="size-4" />
-            AI Video Agent
-          </Button>
-          <Button
-            className="text-[#a1a1a1] justify-start gap-2"
-            variant="ghost"
-          >
-            <User className="size-4" />
-            AI Video Avatar
-          </Button>
-          <Button
-            className="text-[#a1a1a1] justify-start gap-2"
-            variant="ghost"
-          >
-            <Users className="size-4" />
-            Avatar
-          </Button>
-          <Button
-            className="text-[#a1a1a1] justify-start gap-2"
-            variant="ghost"
-          >
-            <Mic className="size-4" />
-            AI Voice Cloning
-          </Button>
-          <Button
-            className="text-[#a1a1a1] justify-start gap-2"
-            variant="ghost"
-          >
-            <Library className="size-4" />
-            My Library
-          </Button>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2 rounded-md p-2 text-sm font-medium transition-colors justify-start",
+                  collapsed && "justify-center",
+                  isActive
+                    ? "bg-neutral-800 text-neutral-50"
+                    : "text-[#a1a1a1] hover:bg-neutral-800/50 hover:text-neutral-50",
+                )}
+              >
+                <Icon className="size-4 shrink-0" />
+
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
         </nav>
       </div>
       <div className="flex flex-col gap-4">
