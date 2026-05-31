@@ -3,13 +3,19 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { CUSTOM_AVATARS, DEFAULT_AVATARS } from "@/src/lib/data/avatars";
-import { AvatarCard } from "./_components/avatar-card";
+import { AvatarCard } from "./_components/AvatarCard";
+import { useState } from "react";
+import { CreateAvatarModal } from "./_components/CreateAvatarModal";
 
 export default function AvatarsDashboard() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleEdit = (id: string) => console.log("Edit requested:", id);
   const handleDelete = (id: string) => console.log("Delete requested:", id);
   const handleSelect = (id: string) => console.log("Selected default:", id);
-  const handleCreate = () => console.log("Creating new avatar workflow...");
+  const handleCreate = () => {
+    setIsModalOpen(true);
+  };
 
   return (
     <section className="overflow-y-auto bg-neutral-950 min-h-screen  p-4 md:p-8 flex-1">
@@ -47,7 +53,6 @@ export default function AvatarsDashboard() {
               onDelete={handleDelete}
             />
           ))}
-          {/* Add Avatar Clickable Card Block */}
           <button
             onClick={handleCreate}
             className="transition-colors rounded-2xl bg-neutral-900/50 text-neutral-500 border-neutral-700 border-2 border-dashed flex p-4 min-h-[200px] flex-col justify-center items-center gap-2 hover:border-neutral-500 hover:text-neutral-300"
@@ -81,6 +86,10 @@ export default function AvatarsDashboard() {
           ))}
         </div>
       </section>
+      <CreateAvatarModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </section>
   );
 }
