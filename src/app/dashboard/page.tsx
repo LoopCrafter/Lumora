@@ -16,10 +16,10 @@ import Image from "next/image";
 
 const DashboardPage = () => {
   return (
-    <>
+    <div>
       <header className="border-white/10 border-t-0 border-r-0 border-b-1 border-l-0 border-solid flex px-12 py-6 justify-between items-center">
         <div className="flex flex-col gap-1">
-          <h1 className="font-semibold text-2xl leading-8 tracking-tight">
+          <h1 className="font-semibold text-2xl leading-8 tracking-tight text-white/70">
             Welcome back, Alex
           </h1>
           <p className="text-[#a1a1a1] text-sm leading-5">
@@ -152,7 +152,7 @@ const DashboardPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
