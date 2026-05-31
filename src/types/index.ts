@@ -5,3 +5,11 @@ export type User = {
   imageUrl: string;
   createdAt: string;
 };
+
+export interface AvatarData {
+  id: string;
+  name: string;
+  type: string;
+  src: string;
+  alt: string;
+}
