@@ -2,37 +2,40 @@
 
 import { useState, useRef, ChangeEvent } from "react";
 import Image from "next/image";
+import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/src/components/ui/dialog";
-import { Button } from "@/src/components/ui/button";
-import { Textarea } from "@/src/components/ui/textarea";
-import {
-  UploadCloud,
-  Mic,
-  Smile,
-  Layers,
-  Sparkles,
-  Upload,
-  X,
-  Image as ImageIcon,
-} from "lucide-react";
+import { X, Loader2, ImageIcon, UploadCloud } from "lucide-react";
+import { StyleSelector } from "./StyleSelector";
 
 interface CreateAvatarModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type AvatarStyle = "podcast" | "casual" | "3d" | "stylized";
+export type AvatarStyle = "podcast" | "casual" | "3d" | "stylized";
 
 export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("podcast");
   const [prompt, setPrompt] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [activeRunId, setActiveRunId] = useState<string | null>(null);
+  const [publicToken, setPublicToken] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { run } = useRealtimeRun(activeRunId || "", {
+    accessToken: publicToken || "dummy_token_to_prevent_error",
+  });
+
+  const taskProgress = run?.metadata?.progress as number | undefined;
+  const taskStatusMessage = run?.metadata?.status as string | undefined;
+  const isProcessing = run?.status === "QUEUED" || run?.status === "EXECUTING";
+  const completedOutput =
+    run?.status === "COMPLETED" ? (run.output as { avatarUrl: string }) : null;
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,11 +46,39 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
   };
 
   const triggerFileInput = () => {
+    if (isProcessing) return;
     fileInputRef.current?.click();
   };
 
+  const handleGeneratePipeline = async () => {
+    if (isProcessing) return;
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagePreview, style: selectedStyle, prompt }),
+      });
+      const data = await res.json();
+      if (data.runId && data.publicAccessToken) {
+        setPublicToken(data.publicAccessToken);
+        setActiveRunId(data.runId);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClose = () => {
+    if (isProcessing) return;
+    setActiveRunId(null);
+    setPublicToken(null);
+    setImagePreview(null);
+    setPrompt("");
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-full max-w-[850px] bg-neutral-900 border border-white/10 text-white rounded-3xl p-6 gap-6 shadow-2xl overflow-hidden md:max-w-[850px]">
         <DialogHeader className="flex flex-row items-center justify-between border-b border-white/10 pb-4">
           <DialogTitle className="text-xl font-bold tracking-wide">
@@ -55,175 +86,108 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
-          <div className="flex flex-col gap-4">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-
-            <div
-              onClick={triggerFileInput}
-              className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 h-[200px] border-neutral-700 bg-neutral-950/40 hover:border-neutral-500 transition-colors cursor-pointer"
-            >
-              <UploadCloud className="size-8 text-blue-400" />
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-sm">
-                  Upload Avatar Image
-                </span>
-                <span className="text-xs text-neutral-400 max-w-[240px] mx-auto leading-normal">
-                  Drag & drop or click to browse — PNG, JPG up to 10MB
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-end flex-1 min-h-[220px]">
-              <div className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full aspect-video bg-neutral-950/60 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 text-neutral-500 relative overflow-hidden">
-                  {imagePreview ? (
-                    <Image
-                      src={imagePreview}
-                      alt="16:9 Preview"
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <ImageIcon className="size-5" />
-                  )}
-                </div>
-                <span className="text-xs text-neutral-400">16:9 Preview</span>
-              </div>
-
-              <div className="w-[140px] flex flex-col items-center gap-2">
-                <div className="w-full aspect-[9/16] bg-neutral-950/60 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 text-neutral-500 relative overflow-hidden">
-                  {imagePreview ? (
-                    <Image
-                      src={imagePreview}
-                      alt="9:16 Preview"
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <ImageIcon className="size-5" />
-                  )}
-                </div>
-                <span className="text-xs text-neutral-400">9:16 Preview</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                Avatar Style
-              </span>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedStyle("podcast")}
-                  className={`p-3 rounded-xl flex flex-col text-left gap-1 border transition-all cursor-pointer ${
-                    selectedStyle === "podcast"
-                      ? "border-blue-600 bg-blue-600/10 ring-1 ring-blue-600"
-                      : "border-white/10 bg-neutral-950/40 hover:bg-neutral-800/60"
-                  }`}
-                >
-                  <Mic
-                    className={`size-4 ${selectedStyle === "podcast" ? "text-blue-400" : "text-neutral-400"}`}
-                  />
-                  <span className="font-semibold text-sm mt-1">Podcast</span>
-                  <span className="text-xs text-neutral-400 leading-tight">
-                    Studio mic-ready look
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedStyle("casual")}
-                  className={`p-3 rounded-xl flex flex-col text-left gap-1 border transition-all cursor-pointer ${
-                    selectedStyle === "casual"
-                      ? "border-blue-600 bg-blue-600/10 ring-1 ring-blue-600"
-                      : "border-white/10 bg-neutral-950/40 hover:bg-neutral-800/60"
-                  }`}
-                >
-                  <Smile
-                    className={`size-4 ${selectedStyle === "casual" ? "text-blue-400" : "text-neutral-400"}`}
-                  />
-                  <span className="font-semibold text-sm mt-1">Casual</span>
-                  <span className="text-xs text-neutral-400 leading-tight">
-                    Relaxed everyday vibe
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedStyle("3d")}
-                  className={`p-3 rounded-xl flex flex-col text-left gap-1 border transition-all cursor-pointer ${
-                    selectedStyle === "3d"
-                      ? "border-blue-600 bg-blue-600/10 ring-1 ring-blue-600"
-                      : "border-white/10 bg-neutral-950/40 hover:bg-neutral-800/60"
-                  }`}
-                >
-                  <Layers
-                    className={`size-4 ${selectedStyle === "3d" ? "text-blue-400" : "text-neutral-400"}`}
-                  />
-                  <span className="font-semibold text-sm mt-1">3D Cartoon</span>
-                  <span className="text-xs text-neutral-400 leading-tight">
-                    Playful rendered style
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedStyle("stylized")}
-                  className={`p-3 rounded-xl flex flex-col text-left gap-1 border transition-all cursor-pointer ${
-                    selectedStyle === "stylized"
-                      ? "border-blue-600 bg-blue-600/10 ring-1 ring-blue-600"
-                      : "border-white/10 bg-neutral-950/40 hover:bg-neutral-800/60"
-                  }`}
-                >
-                  <Sparkles
-                    className={`size-4 ${selectedStyle === "stylized" ? "text-blue-400" : "text-neutral-400"}`}
-                  />
-                  <span className="font-semibold text-sm mt-1">Stylized</span>
-                  <span className="text-xs text-neutral-400 leading-tight">
-                    Artistic creative flair
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                Avatar Prompt (Optional)
-              </label>
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe your avatar style, appearance, or mood... e.g. professional woman in a studio setting with soft lighting"
-                className="bg-neutral-950/40 border border-white/10 rounded-xl text-sm p-3 text-white placeholder:text-neutral-500 focus-visible:ring-1 focus-visible:ring-blue-600 resize-none h-[140px]"
+        {isProcessing && (
+          <div className="w-full bg-neutral-950/80 border border-white/5 p-8 rounded-2xl flex flex-col items-center justify-center gap-4 min-h-[400px]">
+            <Loader2 className="size-10 text-blue-500 animate-spin" />
+            <span className="font-semibold text-base">
+              Generating Avatar Assets
+            </span>
+            <span className="text-sm text-neutral-400">
+              {taskStatusMessage || "Queueing Task..."}
+            </span>
+            <div className="w-full max-w-md bg-neutral-800 h-2 rounded-full overflow-hidden mt-2">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-violet-500 h-full transition-all duration-300"
+                style={{ width: `${taskProgress || 5}%` }}
               />
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex flex-col sm:flex-row gap-3 border-t border-white/10 pt-4 w-full">
-          <Button className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl py-5 font-medium gap-2 text-sm cursor-pointer shadow-lg shadow-blue-900/20">
-            <Sparkles className="size-4" />
-            Generate with AI
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1 bg-neutral-800 border-white/10 hover:bg-neutral-700 text-white rounded-xl py-5 font-medium gap-2 text-sm cursor-pointer"
-          >
-            <Upload className="size-4" />
-            Upload as It Is
-          </Button>
-        </div>
+        {!isProcessing && completedOutput && (
+          <div className="w-full bg-neutral-950/40 border border-white/5 p-6 rounded-2xl flex flex-col items-center gap-6 min-h-[400px] justify-center">
+            <div className="relative size-48 rounded-2xl overflow-hidden border border-white/10">
+              <Image
+                src={completedOutput.avatarUrl}
+                alt="Result"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <button
+              onClick={handleClose}
+              className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl px-6 h-11 cursor-pointer"
+            >
+              Back to Gallery Workspace
+            </button>
+          </div>
+        )}
+
+        {!isProcessing && !completedOutput && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-2">
+            <div className="flex flex-col gap-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <div
+                onClick={triggerFileInput}
+                className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 h-[200px] border-neutral-700 bg-neutral-950/40 hover:border-neutral-500 transition-colors cursor-pointer"
+              >
+                <UploadCloud className="size-8 text-blue-400" />
+                <span className="font-semibold text-sm">
+                  Upload Avatar Image
+                </span>
+                <span className="text-xs text-neutral-400">
+                  Click to browse — PNG, JPG up to 10MB
+                </span>
+              </div>
+              <div className="flex gap-4 items-end flex-1 min-h-[220px]">
+                <div className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full aspect-video bg-neutral-950/60 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden">
+                    {imagePreview ? (
+                      <Image
+                        src={imagePreview}
+                        alt="16:9"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="size-5 text-neutral-500" />
+                    )}
+                  </div>
+                  <span className="text-xs text-neutral-400">16:9 Preview</span>
+                </div>
+                <div className="w-[140px] flex flex-col items-center gap-2">
+                  <div className="w-full aspect-[9/16] bg-neutral-950/60 border border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 text-neutral-500 relative overflow-hidden">
+                    {imagePreview ? (
+                      <Image
+                        src={imagePreview}
+                        alt="9:16"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="size-5 text-neutral-500" />
+                    )}
+                  </div>
+                  <span className="text-xs text-neutral-400">9:16 Preview</span>
+                </div>
+              </div>
+            </div>
+            <StyleSelector
+              selectedStyle={selectedStyle}
+              setSelectedStyle={setSelectedStyle}
+              prompt={prompt}
+              setPrompt={setPrompt}
+              onGenerate={handleGeneratePipeline}
+              onCancel={handleClose}
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
