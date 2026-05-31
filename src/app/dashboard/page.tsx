@@ -7,6 +7,7 @@ import {
   Search,
   User,
   Users,
+  Video,
   Zap,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
@@ -44,14 +45,18 @@ const DashboardPage = () => {
             Explore Features
           </span>
         </div>
-        <div className="grid grid-cols-3 grid-rows-2 gap-4 h-160">
-          <div className="group relative col-span-2 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <Image
-              alt="AI Video Agent"
-              className="size-full object-cover transition-transform duration-500 absolute inset-0"
-              src="/images/ai-video-agent.jpeg"
-              width={1000}
-              height={1000}
+
+        {/* Changed to grid-cols-4 and grid-rows-2 to perfectly match the design layout */}
+        <div className="grid grid-cols-4 grid-rows-2 gap-4 h-160">
+          {/* 1. AI Video Agent (Left side: spans 2 columns and 2 rows) */}
+          <div className="group relative col-span-2 row-span-2 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
+            <video
+              className="size-full object-cover absolute inset-0"
+              src="/videos/ai-video-agent.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.4),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -59,26 +64,52 @@ const DashboardPage = () => {
                 <Zap className="size-5 text-neutral-50" />
               </div>
               <div className="flex flex-col gap-1">
-                <Badge className="bg-neutral-200 text-neutral-900 mb-1 w-fit">
-                  Featured
-                </Badge>
                 <h3 className="font-semibold text-neutral-50 text-xl leading-7">
                   AI Video Agent
                 </h3>
                 <p className="max-w-md text-neutral-50/80 text-sm leading-5">
-                  Describe your idea and let our autonomous agent generate a
-                  complete, polished video from script to final cut.
+                  Create guided video workflows with an intelligent on-screen
+                  agent.
                 </p>
               </div>
             </div>
           </div>
-          <div className="group relative col-span-1 row-span-2 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <Image
-              alt="AI Video Avatar"
-              className="size-full object-cover transition-transform duration-500 absolute inset-0"
-              src="/images/ai-video-avatar.jpeg"
-              width={1000}
-              height={2000}
+
+          {/* 2. AI Video Avatar (Middle-Right Top: 1 column, 1 row) */}
+          <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
+            <video
+              className="size-full object-cover absolute inset-0"
+              src="/videos/ai-video-avatar.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+            <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
+            <div className="flex absolute inset-0 p-6 flex-col justify-between">
+              <div className="size-11 backdrop-blur-sm rounded-xl bg-neutral-950/30 flex justify-center items-center">
+                <Video className="size-5 text-neutral-50" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h3 className="font-semibold text-neutral-50 text-xl leading-7">
+                  AI Video Avatar
+                </h3>
+                <p className="text-neutral-50/80 text-sm leading-5">
+                  Generate lifelike presenter videos from a script or brief.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Avatar (Far Right Top: 1 column, 1 row) */}
+          <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
+            <video
+              className="size-full object-cover absolute inset-0"
+              src="/videos/avatar.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
             <div className="flex absolute inset-0 p-6 flex-col justify-between">
@@ -87,44 +118,21 @@ const DashboardPage = () => {
               </div>
               <div className="flex flex-col gap-1">
                 <h3 className="font-semibold text-neutral-50 text-xl leading-7">
-                  AI Video Avatar
-                </h3>
-                <p className="text-neutral-50/80 text-sm leading-5">
-                  Turn lifelike digital presenters into your spokesperson.
-                  Lip-synced, multilingual, ready in minutes.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
-            <Image
-              alt="Avatar"
-              className="size-full object-cover transition-transform duration-500 absolute inset-0"
-              src="/images/ai-avatar.jpeg"
-              width={1000}
-              height={1000}
-            />
-            <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
-            <div className="flex absolute inset-0 p-6 flex-col justify-between">
-              <div className="size-11 backdrop-blur-sm rounded-xl bg-neutral-950/30 flex justify-center items-center">
-                <Users className="size-5 text-neutral-50" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-neutral-50 text-lg leading-7">
                   Avatar
                 </h3>
                 <p className="text-neutral-50/80 text-sm leading-5">
-                  Design and customize your own unique digital persona.
+                  Design and manage branded avatars for every campaign.
                 </p>
               </div>
             </div>
           </div>
-          <div className="group relative col-span-1 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
+
+          {/* 4. AI Voice Cloning (Bottom Right: spans 2 columns, 1 row) */}
+          <div className="group relative col-span-2 row-span-1 rounded-2xl border-white/10 border-1 border-solid overflow-hidden">
             <Image
-              alt="AI Voice Cloning"
-              className="size-full object-cover transition-transform duration-500 absolute inset-0"
-              src="/images/ai-voice-cloning.jpeg"
-              width={1000}
+              src="/images/voice-cloning.png"
+              alt="voice cloning"
+              width={1500}
               height={1000}
             />
             <div className="bg-[linear-gradient(to_top,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.35),transparent)] absolute inset-0" />
@@ -133,50 +141,14 @@ const DashboardPage = () => {
                 <Mic className="size-5 text-neutral-50" />
               </div>
               <div className="flex flex-col gap-1">
-                <h3 className="font-semibold text-neutral-50 text-lg leading-7">
+                <h3 className="font-semibold text-neutral-50 text-xl leading-7">
                   AI Voice Cloning
                 </h3>
                 <p className="text-neutral-50/80 text-sm leading-5">
-                  Clone any voice with stunning realism in seconds.
+                  Clone voices for polished narration and product content.
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="flex mt-6 items-center gap-2">
-          <Library className="size-4 text-[#a1a1a1]" />
-          <span className="font-medium text-[#a1a1a1] text-sm leading-5">
-            My Library
-          </span>
-        </div>
-        <div className="group relative rounded-2xl border-white/10 border-1 border-solid mt-4 h-32 overflow-hidden">
-          <Image
-            alt="My Library"
-            className="size-full object-cover transition-transform duration-500 absolute inset-0"
-            src="/images/library.jpeg"
-            width={2000}
-            height={1000}
-          />
-          <div className="bg-[linear-gradient(to_right,oklch(0.145_0_0/0.95),oklch(0.145_0_0/0.5),transparent)] absolute inset-0" />
-          <div className="flex absolute inset-0 p-6 justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="size-11 backdrop-blur-sm rounded-xl bg-neutral-950/30 flex justify-center items-center">
-                <Library className="size-5 text-neutral-50" />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <h3 className="font-semibold text-neutral-50 text-lg leading-7">
-                  My Library
-                </h3>
-                <p className="text-neutral-50/80 text-sm leading-5">
-                  Access, manage and re-edit all your generated projects in one
-                  place.
-                </p>
-              </div>
-            </div>
-            <Button className="bg-neutral-200 text-neutral-900 gap-1.5">
-              Open
-              <ArrowRight className="size-4" />
-            </Button>
           </div>
         </div>
       </div>
