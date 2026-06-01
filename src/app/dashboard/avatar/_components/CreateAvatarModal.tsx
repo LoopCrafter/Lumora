@@ -23,6 +23,7 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("podcast");
   const [prompt, setPrompt] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [base64File, setBase64File] = useState<string | null>(null);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [publicToken, setPublicToken] = useState<string | null>(null);
 
@@ -42,6 +43,12 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
     if (file) {
       const url = URL.createObjectURL(file);
       setImagePreview(url);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64File(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -56,7 +63,11 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imagePreview, style: selectedStyle, prompt }),
+        body: JSON.stringify({
+          imagePreview: base64File,
+          style: selectedStyle,
+          prompt,
+        }),
       });
       const data = await res.json();
       if (data.runId && data.publicAccessToken) {
@@ -73,6 +84,7 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
     setActiveRunId(null);
     setPublicToken(null);
     setImagePreview(null);
+    setBase64File(null);
     setPrompt("");
     onClose();
   };

@@ -1,4 +1,4 @@
-import { generateAvatarTask } from "@/src/trigger/enerate-avatar";
+import { generateAvatarTask } from "@/src/trigger/generate-avatar";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
