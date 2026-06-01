@@ -1,4 +1,10 @@
-import { integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  timestamp,
+  varchar,
+  boolean,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -10,3 +16,16 @@ export const users = pgTable("users", {
   lastVisitTime: timestamp({ mode: "date" }).defaultNow().notNull(),
   userId: varchar({ length: 255 }).notNull(),
 });
+
+export const avatars = pgTable("avatars", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 255 }).notNull(),
+  type: varchar({ length: 100 }).notNull(),
+  src: varchar().notNull(),
+  isCustom: boolean().default(true).notNull(),
+  userId: varchar({ length: 255 }).notNull(),
+  createdAt: timestamp({ mode: "date" }).defaultNow().notNull(),
+});
+
+export type Avatar = typeof avatars.$inferSelect;
+export type NewAvatar = typeof avatars.$inferInsert;

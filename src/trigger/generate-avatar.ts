@@ -1,70 +1,93 @@
 import { task, metadata } from "@trigger.dev/sdk/v3";
-import { GoogleGenAI } from "@google/genai";
+import Replicate from "replicate";
+import { v2 as cloudinary } from "cloudinary";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { avatars } from "@/db/schema";
 
 interface GeneratePayload {
   imageBufferUrl?: string | null;
   style: "podcast" | "casual" | "3d" | "stylized";
   prompt?: string;
+  avatarName?: string;
+  userId: string;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const sql = neon(process.env.DATABASE_URL!);
+const db = drizzle(sql);
 
 export const generateAvatarTask = task({
   id: "generate-avatar",
   maxDuration: 300,
   run: async (payload: GeneratePayload) => {
     await metadata.set("progress", 10);
-    await metadata.set("status", "Initializing Free Gemini Engine...");
+    await metadata.set("status", "Executing Image Generation Pipeline...");
 
-    let inlineData: any = undefined;
-    if (payload.imageBufferUrl) {
-      await metadata.set("progress", 25);
-      await metadata.set("status", "Parsing reference image...");
+    const styleLabels: Record<string, string> = {
+      podcast: "Podcast",
+      casual: "Casual",
+      "3d": "3D Cartoon",
+      stylized: "Stylized",
+    };
 
-      const base64Data = payload.imageBufferUrl.split(",")[1];
+    const targetType = styleLabels[payload.style] || "Custom";
+    const finalAvatarName =
+      payload.avatarName?.trim() ||
+      `Avatar #${Math.floor(100 + Math.random() * 900)}`;
+    const enhancedPrompt = `A high-fidelity corporate headshot portrait, ${payload.style} design style, ${payload.prompt || "highly detailed face, studio lighting, clean background"}`;
 
-      inlineData = {
-        data: base64Data,
-        mimeType: "image/jpeg",
-      };
-    }
-
-    await metadata.set("progress", 50);
-    await metadata.set("status", "Generating native avatar image...");
-
-    const enhancedPrompt = `Generate a high-fidelity ${payload.style} avatar style portrait. ${payload.prompt || ""}. Ensure pristine studio lighting profile settings.`;
-
-    // فراخوانی قابلیت تولید عکسِ نیتیو بر روی مدل متنی رایگان
-    const aiResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // مدل چندرسانه‌ای کاملاً رایگان
-      contents: inlineData
-        ? [{ role: "user", parts: [{ inlineData }, { text: enhancedPrompt }] }]
-        : enhancedPrompt,
-      config: {
-        // این بخش به مدل دستور می‌دهد که خروجی را به جای متن، به شکل عکس برگرداند
-        responseModalities: ["IMAGE"],
+    const output = await replicate.run("black-forest-labs/flux-dev", {
+      input: {
+        prompt: enhancedPrompt,
+        aspect_ratio: "1:1",
+        output_format: "jpg",
+        output_quality: 90,
+        image: payload.imageBufferUrl || undefined,
       },
     });
 
-    await metadata.set("progress", 90);
-    await metadata.set("status", "Finalizing image compilation...");
+    await metadata.set("progress", 60);
+    await metadata.set("status", "Uploading Asset to Cloudinary Media CDN...");
 
-    // استخراج بایت‌های تصویر تولید شده به صورت نیتیو
-    const generatedPart = aiResponse.candidates?.[0]?.content?.parts?.[0];
-    if (!generatedPart || !generatedPart.inlineData?.data) {
-      throw new Error(
-        "Gemini Native Image engine failed to return image data. Check prompt.",
-      );
+    const rawUrl = Array.isArray(output) ? output[0] : output;
+    if (!rawUrl) {
+      throw new Error("Failed to generate image from Replicate backend.");
     }
+    const imageUrl = rawUrl.toString();
+    const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+      folder: "lumora-avatars",
+      transformation: [
+        { width: 500, height: 500, crop: "fill", gravity: "face" },
+      ],
+    });
 
-    const resultUrl = `data:image/jpeg;base64,${generatedPart.inlineData.data}`;
+    await metadata.set("progress", 85);
+    await metadata.set("status", "Saving Asset Records to Neon database...");
+
+    const [insertedAvatar] = await db
+      .insert(avatars)
+      .values({
+        name: finalAvatarName,
+        type: targetType,
+        src: uploadResponse.secure_url,
+        userId: payload.userId || "guest_user_fallback",
+        isCustom: true,
+      })
+      .returning();
 
     await metadata.set("progress", 100);
-    await metadata.set("status", "Avatar generated successfully!");
+    await metadata.set("status", "Pipeline completed successfully!");
 
     return {
-      avatarUrl: resultUrl,
-      style: payload.style,
+      avatar: insertedAvatar,
     };
   },
 });
