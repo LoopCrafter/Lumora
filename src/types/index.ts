@@ -13,3 +13,13 @@ export interface AvatarData {
   src: string;
   alt: string;
 }
+
+export interface CustomAvatar {
+  id: number;
+  name: string;
+  type: string;
+  src: string;
+  isCustom: boolean;
+  userId: string;
+  createdAt: string;
+}

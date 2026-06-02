@@ -11,15 +11,16 @@ import {
 } from "@/src/components/ui/dialog";
 import { X, Loader2, ImageIcon, UploadCloud } from "lucide-react";
 import { StyleSelector } from "./StyleSelector";
+import { useRouter, useSearchParams } from "next/navigation";
 
-interface CreateAvatarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+interface CreateAvatarModalProps {}
 
 export type AvatarStyle = "podcast" | "casual" | "3d" | "stylized";
 
-export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
+export function CreateAvatarModal() {
+  const searchparams = useSearchParams();
+  const isOpen = searchparams.get("create") === "true";
+  const router = useRouter();
   const [selectedStyle, setSelectedStyle] = useState<AvatarStyle>("podcast");
   const [prompt, setPrompt] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -86,7 +87,7 @@ export function CreateAvatarModal({ isOpen, onClose }: CreateAvatarModalProps) {
     setImagePreview(null);
     setBase64File(null);
     setPrompt("");
-    onClose();
+    router.push("/dashboard/avatar");
   };
 
   return (

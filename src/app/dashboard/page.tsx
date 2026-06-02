@@ -1,20 +1,8 @@
-import {
-  ArrowRight,
-  Bell,
-  LayoutGrid,
-  Library,
-  Mic,
-  Search,
-  User,
-  Users,
-  Video,
-  Zap,
-} from "lucide-react";
-import { Badge } from "@/src/components/ui/badge";
+import { Bell, LayoutGrid, Mic, Search, User, Video, Zap } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import Image from "next/image";
 
-const DashboardPage = () => {
+const DashboardPage = async () => {
   return (
     <div>
       <header className="border-white/10 border-t-0 border-r-0 border-b-1 border-l-0 border-solid flex px-12 py-6 justify-between items-center">
