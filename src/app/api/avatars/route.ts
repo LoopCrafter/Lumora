@@ -1,5 +1,6 @@
 import { getDb } from "@/db";
 import { avatars } from "@/db/schema";
+import { auth } from "@clerk/nextjs/server";
 import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -26,6 +27,50 @@ export async function GET(request: Request) {
     console.error("Failed to query user avatars layout:", error);
     return NextResponse.json(
       { error: "Internal Server Database Query Error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { userId: loggedInUserId } = await auth();
+    if (!loggedInUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const avatarIdString = searchParams.get("id");
+
+    if (!avatarIdString) {
+      return NextResponse.json({ error: "Missing avatar id" }, { status: 400 });
+    }
+
+    const avatarId = parseInt(avatarIdString, 10);
+    if (isNaN(avatarId)) {
+      return NextResponse.json(
+        { error: "Invalid avatar id format" },
+        { status: 400 },
+      );
+    }
+
+    const [deletedAvatar] = await getDb()
+      .delete(avatars)
+      .where(and(eq(avatars.id, avatarId), eq(avatars.userId, loggedInUserId)))
+      .returning();
+
+    if (!deletedAvatar) {
+      return NextResponse.json(
+        { error: "Avatar not found or unauthorized to delete" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ success: true, deletedId: deletedAvatar.id });
+  } catch (error) {
+    console.error("Failed to execute avatar deletion query:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }
