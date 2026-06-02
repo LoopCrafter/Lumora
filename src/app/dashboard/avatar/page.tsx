@@ -17,7 +17,7 @@ export default async function AvatarsDashboard() {
   }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const response = await fetch(`${baseUrl}/api/avatars?userId=${userId}`, {
-    cache: "no-store", // Prevents the server from caching old API data structures
+    cache: "no-store",
   });
 
   if (!response.ok) {

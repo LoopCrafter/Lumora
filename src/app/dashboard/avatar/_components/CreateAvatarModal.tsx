@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import Image from "next/image";
 import { useRealtimeRun } from "@trigger.dev/react-hooks";
 import {
@@ -12,6 +12,7 @@ import {
 import { X, Loader2, ImageIcon, UploadCloud } from "lucide-react";
 import { StyleSelector } from "./StyleSelector";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 
 interface CreateAvatarModalProps {}
 
@@ -27,6 +28,7 @@ export function CreateAvatarModal() {
   const [base64File, setBase64File] = useState<string | null>(null);
   const [activeRunId, setActiveRunId] = useState<string | null>(null);
   const [publicToken, setPublicToken] = useState<string | null>(null);
+  const { userId } = useAuth();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { run } = useRealtimeRun(activeRunId || "", {
@@ -38,6 +40,12 @@ export function CreateAvatarModal() {
   const isProcessing = run?.status === "QUEUED" || run?.status === "EXECUTING";
   const completedOutput =
     run?.status === "COMPLETED" ? (run.output as { avatarUrl: string }) : null;
+
+  useEffect(() => {
+    if (completedOutput) {
+      handleClose();
+    }
+  }, [completedOutput]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,6 +76,7 @@ export function CreateAvatarModal() {
           imagePreview: base64File,
           style: selectedStyle,
           prompt,
+          userId,
         }),
       });
       const data = await res.json();
@@ -114,25 +123,6 @@ export function CreateAvatarModal() {
                 style={{ width: `${taskProgress || 5}%` }}
               />
             </div>
-          </div>
-        )}
-
-        {!isProcessing && completedOutput && (
-          <div className="w-full bg-neutral-950/40 border border-white/5 p-6 rounded-2xl flex flex-col items-center gap-6 min-h-[400px] justify-center">
-            <div className="relative size-48 rounded-2xl overflow-hidden border border-white/10">
-              <Image
-                src={completedOutput.avatarUrl}
-                alt="Result"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <button
-              onClick={handleClose}
-              className="bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl px-6 h-11 cursor-pointer"
-            >
-              Back to Gallery Workspace
-            </button>
           </div>
         )}
 
