@@ -19,7 +19,7 @@ export interface CustomAvatar {
   name: string;
   type: string;
   src: string;
-  isCustom: boolean;
-  userId: string;
-  createdAt: string;
+  isCustom?: boolean;
+  userId?: string;
+  createdAt?: string;
 }

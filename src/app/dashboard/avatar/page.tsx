@@ -1,6 +1,5 @@
 import { Plus } from "lucide-react";
 import { buttonVariants } from "@/src/components/ui/button";
-import { CUSTOM_AVATARS, DEFAULT_AVATARS } from "@/src/lib/data/avatars";
 import { AvatarCard } from "./_components/AvatarCard";
 
 import { CreateAvatarModal } from "./_components/CreateAvatarModal";
@@ -9,6 +8,7 @@ import { cn } from "@/src/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { CustomAvatar } from "@/src/types";
+import { DEFAULT_AVATARS } from "@/src/lib/constants";
 
 export default async function AvatarsDashboard() {
   const { userId } = await auth();
@@ -88,7 +88,7 @@ export default async function AvatarsDashboard() {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {customAvatars.map((avatar) => (
+          {DEFAULT_AVATARS.map((avatar) => (
             <AvatarCard key={avatar.id} avatar={avatar} variant="default" />
           ))}
         </div>
