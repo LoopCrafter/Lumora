@@ -1,9 +1,8 @@
 import { task, metadata } from "@trigger.dev/sdk/v3";
 import Replicate from "replicate";
 import { v2 as cloudinary } from "cloudinary";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
 import { avatars } from "@/db/schema";
+import { getDb } from "@/db";
 
 interface GeneratePayload {
   imageBufferUrl?: string | null;
@@ -20,9 +19,6 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql);
 
 export const generateAvatarTask = task({
   id: "generate-avatar",
@@ -72,7 +68,7 @@ export const generateAvatarTask = task({
     await metadata.set("progress", 85);
     await metadata.set("status", "Saving Asset Records to Neon database...");
 
-    const [insertedAvatar] = await db
+    const [insertedAvatar] = await getDb()
       .insert(avatars)
       .values({
         name: finalAvatarName,
