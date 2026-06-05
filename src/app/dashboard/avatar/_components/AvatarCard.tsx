@@ -5,7 +5,7 @@ import { Button } from "@/src/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { DeleteConfirmationModal } from "../DeleteConfirmationModal";
+import { DeleteConfirmationModal } from "./DeleteConfirmationModal";
 import { useState } from "react";
 
 interface AvatarCardProps {

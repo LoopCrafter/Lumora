@@ -20,6 +20,7 @@ interface GeneratePayload {
 
 const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -45,13 +46,11 @@ function buildPrompt(
 }
 
 // async function generateImage({
-//   ai,
 //   sourceImage,
 //   style,
 //   prompt,
 //   aspectRatio,
 // }: {
-//   ai: any;
 //   sourceImage: string;
 //   style: AvatarStyle;
 //   prompt: string | null | undefined;
@@ -121,7 +120,7 @@ async function generateImage({
 
   const output = await replicate.run(
     // Switched to a dedicated Image-to-Image workflow mapping for Flux Schnell
-    "black-forest-labs/flux-kontext-pro",
+    "black-forest-labs/flux-schnell",
     {
       input: {
         prompt: finalPrompt,
@@ -166,7 +165,7 @@ async function uploadGeneratedImage({
   image: { data: string; mimeType: string };
 }) {
   const dataUri = `data:${image.mimeType};base64,${image.data}`;
-
+  console.log("hamedhamedhamed2", userId);
   const uploadResponse = await cloudinary.uploader.upload(dataUri, {
     folder: "lumora-avatars",
     public_id: `user_${userId}_avatar_${avatarId}_${aspectRatio.replace(":", "-")}`,
@@ -187,7 +186,6 @@ async function updateAvatar(
   userId: string,
   data: {
     status: string;
-    image_16_9_url?: string;
     image_9_16_url?: string;
     type?: string;
     name?: string;
@@ -198,8 +196,7 @@ async function updateAvatar(
     .set({
       status: data.status,
       src: data.image_9_16_url ?? "",
-      image_16_9_url: data.image_16_9_url,
-      image_9_16_url: data.image_9_16_url,
+      image_9_16_url: data.image_9_16_url ?? "",
       type: data.type ?? "Custom",
       name: data.name,
     })
@@ -253,12 +250,6 @@ export const generateAvatarTask = task({
         35,
         "Generating the 16:9 landscape avatar version...",
       );
-      const landscape = await generateImage({
-        sourceImage: payload.imageBufferUrl,
-        style: payload.style,
-        prompt: payload.prompt,
-        aspectRatio: "16:9",
-      });
 
       await setProgress(
         "generating_9_16",
@@ -278,13 +269,6 @@ export const generateAvatarTask = task({
         "Saving generated avatar previews to Cloudinary...",
       );
 
-      const image16x9Url = await uploadGeneratedImage({
-        userId: payload.userId,
-        avatarId: payload.avatarId,
-        aspectRatio: "16:9",
-        image: landscape,
-      });
-
       const image9x16Url = await uploadGeneratedImage({
         userId: payload.userId,
         avatarId: payload.avatarId,
@@ -299,7 +283,6 @@ export const generateAvatarTask = task({
       );
       await updateAvatar(payload.avatarId, payload.userId, {
         status: "completed",
-        image_16_9_url: image16x9Url,
         image_9_16_url: image9x16Url,
         type: targetType,
         name: finalAvatarName,
@@ -309,7 +292,6 @@ export const generateAvatarTask = task({
 
       return {
         avatarId: payload.avatarId,
-        image16x9Url,
         image9x16Url,
       };
     } catch (error) {
